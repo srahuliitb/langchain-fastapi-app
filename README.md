@@ -6,7 +6,7 @@ RAG API over Axis Max Life PDF prospectuses. Runs locally on macOS with FastAPI,
 
 - Python 3.10+
 - **Redis** running locally: `brew services start redis` (or `redis-server`)
-- **Ollama** (optional, for local LLM): [ollama.ai](https://ollama.ai), then `ollama pull llama2` (or your `OLLAMA_MODEL`)
+- **Ollama** (required for `/query`): [ollama.ai](https://ollama.ai). Start the app or run `ollama serve`, then pull your model: `ollama pull llama2` (or match `OLLAMA_MODEL`). If you get 503 on `/query`, Ollama is not running or the model is not pulled.
 
 ## Environment
 
@@ -16,6 +16,7 @@ In `.zshrc` (or `.env` in the project root):
 export LANGCHAIN_EMBEDDING_PROVIDER=sentence_transformers
 export VECTOR_STORE_PATH=./vector_db
 export REDIS_URL=redis://localhost:6379
+# Use the exact Ollama model name (e.g. llama2; do not use llama2-7b — pull with: ollama pull llama2)
 export OLLAMA_MODEL=llama2
 ```
 

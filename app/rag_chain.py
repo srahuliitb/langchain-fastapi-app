@@ -7,7 +7,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma  # or: from langchain_chroma import Chroma
 from langchain_core.prompts import PromptTemplate
 from app.ollama_llm import get_local_llm
 
@@ -59,8 +59,10 @@ def build_rag_chain():
     retriever = db.as_retriever(search_kwargs={"k": 5})
 
     def _run(query: str, chat_history: str = "") -> dict:
-        docs = retriever.get_relevant_documents(query)
-        context = "\n\n---\n\n".join(doc.page_content for doc in docs)
+        docs = retriever.invoke(query)
+        if not isinstance(docs, list):
+            docs = list(docs) if docs else []
+        context = "\n\n---\n\n".join(getattr(doc, "page_content", str(doc)) for doc in docs)
         prompt = _PROMPT.format(
             context=context or "(No relevant passages found.)",
             question=query,

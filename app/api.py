@@ -16,6 +16,11 @@ load_dotenv()
 from app.rag_chain import build_rag_chain
 from app.ingest_policies import ingest
 
+try:
+    from langchain_community.llms.ollama import OllamaEndpointNotFoundError
+except ImportError:
+    OllamaEndpointNotFoundError = Exception  # noqa: S001
+
 app = FastAPI(
     title="Axis Max Life Insurance Q&A",
     description="RAG API over Axis Max Life PDF prospectuses with Redis conversation memory and Ollama LLM.",
@@ -97,9 +102,32 @@ def ask(q: Query):
     except Exception:
         cache = None
 
-    response = chain(q.question, chat_history=chat_history)
+    try:
+        response = chain(q.question, chat_history=chat_history)
+    except OllamaEndpointNotFoundError as e:
+        model = os.getenv("OLLAMA_MODEL", "llama2")
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Ollama model not available. Ensure Ollama is running (e.g. run `ollama serve` or start the Ollama app) "
+                f"and the model is pulled: `ollama pull {model}`. Original error: {e!s}"
+            ),
+        ) from e
+    except Exception as e:
+        err = str(e).lower()
+        if "connection" in err or "refused" in err or "ollama" in err:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Ollama is not reachable. Start Ollama (e.g. run `ollama serve` or open the Ollama app), "
+                    f"then pull your model: `ollama pull {os.getenv('OLLAMA_MODEL', 'llama2')}`. Error: {e!s}"
+                ),
+            ) from e
+        raise
+
     answer = response["result"]
-    sources = [doc.metadata.get("source", "") for doc in response["source_documents"]]
+    sources = [getattr(doc, "metadata", {}) or {} for doc in response["source_documents"]]
+    sources = [s.get("source", "") for s in sources]
     result = {"answer": answer, "sources": sources}
 
     if cache:
