@@ -1,0 +1,22 @@
+# Axis Max Life Insurance Q&A – local FastAPI + LangChain + Redis + Ollama
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-dotenv>=1.0.0
+redis>=5.0.0
+
+# LangChain
+langchain>=0.1.0
+langchain-community>=0.0.20
+langchain-core>=0.1.0
+langchain-text-splitters>=0.0.1
+
+# Vector store & embeddings
+chromadb>=0.4.0
+sentence-transformers>=2.2.0
+
+# PDF ingestion
+pypdf>=3.0.0
+
+# Optional (already in your env)
+# tiktoken  # only if using OpenAI later
+# langchain-openai  # only if switching to OpenAI
