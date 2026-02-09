@@ -16,7 +16,6 @@ In `.zshrc` (or `.env` in the project root):
 export LANGCHAIN_EMBEDDING_PROVIDER=sentence_transformers
 export VECTOR_STORE_PATH=./vector_db
 export REDIS_URL=redis://localhost:6379
-# Use the exact Ollama model name (e.g. llama2; do not use llama2-7b — pull with: ollama pull llama2)
 export OLLAMA_MODEL=llama2
 ```
 
