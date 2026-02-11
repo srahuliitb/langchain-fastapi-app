@@ -78,6 +78,7 @@ def root():
   <meta charset="UTF-8" />
   <title>Axis Max Life Insurance Q&A</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -297,8 +298,13 @@ def root():
             return;
           }
 
-          // Original, simple behaviour: just show the answer text (may include Markdown)
-          answerEl.textContent = data.answer || "";
+          // Render Markdown if marked.js is available, otherwise fall back to plain text
+          var ans = data.answer || "";
+          if (window.marked && typeof window.marked.parse === "function") {
+            answerEl.innerHTML = window.marked.parse(ans);
+          } else {
+            answerEl.textContent = ans;
+          }
 
           if (data.sources && data.sources.length) {
             var cleanSources = data.sources.filter(function (s) { return !!s; });
