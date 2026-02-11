@@ -253,54 +253,58 @@ def root():
 
   <script>
     (function () {
-      const questionEl = document.getElementById("question");
-      const askBtn = document.getElementById("askBtn");
-      const answerEl = document.getElementById("answer");
-      const sourcesEl = document.getElementById("sources");
-      const statusEl = document.getElementById("status");
+      var questionEl = document.getElementById("question");
+      var askBtn = document.getElementById("askBtn");
+      var answerEl = document.getElementById("answer");
+      var sourcesEl = document.getElementById("sources");
+      var statusEl = document.getElementById("status");
 
-      const SESSION_KEY = "axis-maxlife-session-id";
-      let sessionId = window.localStorage.getItem(SESSION_KEY);
+      var SESSION_KEY = "axis-maxlife-session-id";
+      var sessionId = window.localStorage.getItem(SESSION_KEY);
       if (!sessionId) {
         sessionId = "sess-" + Math.random().toString(36).slice(2, 10);
         window.localStorage.setItem(SESSION_KEY, sessionId);
       }
 
       async function sendQuery() {
-        const q = questionEl.value.trim();
-        if (!q) return;
+        var q = questionEl.value.trim();
+        if (!q) {
+          return;
+        }
+
         askBtn.disabled = true;
         answerEl.textContent = "Thinking…";
         sourcesEl.innerHTML = "";
         statusEl.textContent = "";
 
         try {
-          const res = await fetch("/query", {
+          var res = await fetch("/query", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ question: q, session_id: sessionId }),
+            body: JSON.stringify({ question: q, session_id: sessionId })
           });
 
-          const text = await res.text();
-          let data;
+          var text = await res.text();
+          var data;
           try {
             data = JSON.parse(text);
-          } catch {
+          } catch (e) {
             throw new Error(text || ("Unexpected response with status " + res.status));
           }
 
           if (!res.ok) {
-            answerEl.textContent = data.detail || ("Error " + res.status);
+            answerEl.textContent = data && data.detail ? data.detail : ("Error " + res.status);
             return;
           }
 
+          // Original, simple behaviour: just show the answer text (may include Markdown)
           answerEl.textContent = data.answer || "";
 
           if (data.sources && data.sources.length) {
-            const cleanSources = data.sources.filter(Boolean);
+            var cleanSources = data.sources.filter(function (s) { return !!s; });
             if (cleanSources.length) {
-              const items = cleanSources
-                .map((s) => "<li>" + s + "</li>")
+              var items = cleanSources
+                .map(function (s) { return "<li>" + s + "</li>"; })
                 .join("");
               sourcesEl.innerHTML = "Sources:<ul>" + items + "</ul>";
             } else {
@@ -318,7 +322,10 @@ def root():
         }
       }
 
-      askBtn.addEventListener("click", sendQuery);
+      askBtn.addEventListener("click", function () {
+        sendQuery();
+      });
+
       questionEl.addEventListener("keydown", function (ev) {
         if ((ev.metaKey || ev.ctrlKey) && ev.key === "Enter") {
           ev.preventDefault();
